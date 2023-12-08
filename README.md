@@ -16,3 +16,11 @@
  └── iotsensors-feed
      └── Bridge service to automatically import external IoT API feeds to DB.
   ```
+
+## Running
+ Start the entire stack by running \
+ `docker-compose up`
+ \
+ Try scaling the CCTV parking feed container by running \
+ `docker-compose up --scale cctvparking=3 -d` \
+ If this works, try uncommenting the replicated mode from `cctvparking` container to natively run the scaling from `compose.yml`.

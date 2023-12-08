@@ -1,4 +1,7 @@
 services:
+  #todo: In future run this with multiple instances using scale option and add an additional NGINX load balancer
+  #todo: -- webserver, apiserver needs this with an NGINX load balancer each respectively.
+  #todo: -- cctvparking needs only multiple instances w/o load balancer.
 
   webserver:
     container_name: cms-webserver
@@ -26,8 +29,8 @@ services:
       - db-network
     environment:
       - MONGODB_URL=mongodb://database:27017/cms
-    expose:
-      - 8099
+    ports:
+      - "8081:8081"
     restart: unless-stopped
 
   database:
@@ -45,6 +48,9 @@ services:
 
   cctvparking:
     container_name: cms-cctvparking-feed    # ignored when deployed in swarm mode
+    # ---- Scaled mode ----
+    # container_name: cms-cctvparking-feed-{{.Task.Slot}}
+    # ---------------------
     build: ./containers/cctvparking-feed
     image: cms-cctvparking-feed
     # add GPU access to container, test this by running nvidia-smi inside container shell
@@ -57,6 +63,10 @@ services:
             - driver: nvidia
               count: 1
               capabilities: [gpu ultility]
+      # ---- Scaled mode ----
+      # mode: replicated
+      # replicas: 3
+      # ---------------------
     # environment:
     #   - NVIDIA_VISIBLE_DEVICES=all
     depends_on:
@@ -67,6 +77,9 @@ services:
       - db-network
     environment:
       - MONGODB_URL=mongodb://database:27017/cms
+      # ---- Scaled mode ----
+      # - CONTAINER_REPLICA="{{.Task.Slot}}"
+      # ---------------------
     restart: unless-stopped
 
   iotsensors:
