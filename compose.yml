@@ -1,0 +1,87 @@
+services:
+
+  webserver:
+    container_name: cms-webserver
+    image: nginx:latest
+    volumes:
+      - ./containers/webserver/public:/usr/share/nginx/html
+    depends_on:
+      - database
+      - apiserver
+    links:
+      - apiserver
+    ports:
+      - "8080:80"
+    restart: unless-stopped
+
+  apiserver:
+    container_name: cms-apiserver
+    build: ./containers/socket-api
+    depends_on:
+      - database
+    links:
+      - database
+    networks:
+      - db-network
+    environment:
+      - MONGODB_URL=mongodb://database:27017/cms
+    expose:
+      - 8099
+    restart: unless-stopped
+
+  database:
+    container_name: cms-db
+    image: mongo:latest
+    volumes:
+      - cms-db:/data/db
+    env_file:
+      - ./configs/db.env
+    expose:
+      - 27017
+    networks:
+      - db-network
+    restart: always
+
+  cctvparking:
+    build: ./containers/cctvparking-feed
+    # add GPU access to container, test this by running nvidia-smi inside container shell
+    ipc: host
+    runtime: nvidia
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu ultility]
+    # environment:
+    #   - NVIDIA_VISIBLE_DEVICES=all
+    depends_on:
+      - database
+    links:
+      - database
+    networks:
+      - db-network
+    environment:
+      - MONGODB_URL=mongodb://database:27017/cms
+    restart: unless-stopped
+
+  iotsensors:
+    container_name: cms-iotsensors
+    build: ./containers/iotsensors-feed
+    depends_on:
+      - database
+    links:
+      - database
+    networks:
+      - db-network
+    environment:
+      - MONGODB_URL=mongodb://database:27017/cms
+    restart: unless-stopped
+
+volumes:
+  cms-db:
+
+networks:
+  db-network:
+    driver: bridge

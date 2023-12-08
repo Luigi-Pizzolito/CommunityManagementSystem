@@ -19,3 +19,8 @@
 
 # Go workspace file
 go.work
+
+# -------------------------------------------------------------
+
+# Hide DB Config Keys
+configs/db.env
