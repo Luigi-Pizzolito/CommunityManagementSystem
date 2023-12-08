@@ -16,7 +16,7 @@ services:
 
   apiserver:
     container_name: cms-apiserver
-    build: ./containers/socket-api
+    build: ./containers/apiserver
     depends_on:
       - database
     links:

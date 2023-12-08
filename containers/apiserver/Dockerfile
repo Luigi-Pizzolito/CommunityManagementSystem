@@ -6,6 +6,6 @@ WORKDIR /src
 COPY . .
 # -- Install dependencies
 RUN go mod download
-RUN go build -o /bin/socket-api ./src
+RUN go build -o /bin/apiserver ./src
 # -- Start program
-ENTRYPOINT ["/bin/socket-api"]
+ENTRYPOINT ["/bin/apiserver"]
