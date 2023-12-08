@@ -17,6 +17,7 @@ services:
   apiserver:
     container_name: cms-apiserver
     build: ./containers/apiserver
+    image: cms-apiserver
     depends_on:
       - database
     links:
@@ -43,7 +44,9 @@ services:
     restart: always
 
   cctvparking:
+    container_name: cms-cctvparking-feed    # ignored when deployed in swarm mode
     build: ./containers/cctvparking-feed
+    image: cms-cctvparking-feed
     # add GPU access to container, test this by running nvidia-smi inside container shell
     ipc: host
     runtime: nvidia
@@ -69,6 +72,7 @@ services:
   iotsensors:
     container_name: cms-iotsensors
     build: ./containers/iotsensors-feed
+    image: cms-iotsensors-feed
     depends_on:
       - database
     links:
