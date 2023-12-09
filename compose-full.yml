@@ -1,0 +1,132 @@
+services:
+  #todo: In future run this with multiple instances using scale option and add an additional NGINX load balancer
+  #todo: -- webserver, apiserver needs this with an NGINX load balancer each respectively.
+  #todo: -- cctvparking needs only multiple instances w/o load balancer.
+
+  webserver:
+    container_name: cms-webserver
+    image: nginx:latest
+    volumes:
+      - ./containers/webserver/public:/usr/share/nginx/html
+    depends_on:
+      - database
+      - apiserver
+    links:
+      - apiserver
+    ports:
+      - "8089:80"
+    restart: unless-stopped
+
+  apiserver:
+    container_name: cms-apiserver
+    build: ./containers/apiserver
+    image: cms-apiserver
+    depends_on:
+      - database
+    links:
+      - database
+    networks:
+      - db-network
+    environment:
+      - MONGODB_URL=mongodb://database:27017/cms
+    ports:
+      - "8081:8081"
+    # restart: unless-stopped
+
+  database:
+    container_name: cms-db
+    image: mongo:latest
+    volumes:
+      - cms-db:/data/db
+    env_file:
+      - ./configs/db.env
+    expose:
+      - 27017
+    ports:
+      - "27017:27017"
+    networks:
+      - db-network
+    restart: always
+
+  database-ui:
+    image: mongo-express
+    env_file:
+      - ./configs/db-ui.env
+    ports:
+      - "8082:8081"
+    links:
+      - database
+    networks:
+      - db-network
+    depends_on:
+      - database 
+
+  faker:
+    build: ./containers/faker
+    image: cms-faker
+    depends_on:
+      - database
+    links:
+      - database
+    networks:
+      - db-network
+    
+
+
+
+  # cctvparking:
+  #   container_name: cms-cctvparking-feed    # ignored when deployed in swarm mode
+  #   # ---- Scaled mode ----
+  #   # container_name: cms-cctvparking-feed-{{.Task.Slot}}
+  #   # ---------------------
+  #   build: ./containers/cctvparking-feed
+  #   image: cms-cctvparking-feed
+  #   # add GPU access to container, test this by running nvidia-smi inside container shell
+  #   ipc: host
+  #   runtime: nvidia
+  #   deploy:
+  #     resources:
+  #       reservations:
+  #         devices:
+  #           - driver: nvidia
+  #             count: 1
+  #             capabilities: [gpu]
+  #     # ---- Scaled mode ----
+  #     # mode: replicated
+  #     # replicas: 3
+  #     # ---------------------
+  #   # environment:
+  #   #   - NVIDIA_VISIBLE_DEVICES=all
+  #   depends_on:
+  #     - database
+  #   links:
+  #     - database
+  #   networks:
+  #     - db-network
+  #   environment:
+  #     - MONGODB_URL=mongodb://database:27017/cms
+  #     # ---- Scaled mode ----
+  #     # - CONTAINER_REPLICA="{{.Task.Slot}}"
+  #     # ---------------------
+  #   # restart: unless-stopped
+
+  iotsensors:
+    container_name: cms-iotsensors
+    build: ./containers/iotsensors-feed
+    image: cms-iotsensors-feed
+    depends_on:
+      - database
+    links:
+      - database
+    networks:
+      - db-network
+    environment:
+      - MONGODB_URL=mongodb://database:27017/cms
+    # restart: unless-stopped
+
+volumes:
+  cms-db:
+
+networks:
+  db-network:
+    driver: bridge
