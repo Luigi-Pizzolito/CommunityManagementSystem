@@ -10,7 +10,10 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
         integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <script src="https://unpkg.com/leaflet-providers@latest/leaflet-providers.js"></script>
-    <title>UrbanPulse Innovations - CMS</title>
+    <!-- Leaflet Heatmap -->
+    <script src="https://cdn.jsdelivr.net/npm/heatmapjs@2.0.2/heatmap.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/leaflet-heatmap@1.0.0/leaflet-heatmap.js"></script>
+    <title>UrbanPulse Innovations - Community Management</title>
     <style>
         html,
         body {
@@ -23,7 +26,7 @@
 <body>
     <div id="map" style="height: 1000px; padding:0; margin:0;"></div>
     <script>
-        var map = L.map('map').setView([31.2416, 121.49491], 13);
+        // var map = L.map('map').setView([31.2416, 121.49491], 13);
         /*
         L.tileLayer('https://tile.openstreetmap.fr/{z}/{x}/{y}.png', {
             maxZoom: 19,
@@ -31,14 +34,64 @@
             attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         }).addTo(map);
         */
-        L.tileLayer('https://{s}.tile.jawg.io/jawg-matrix/{z}/{x}/{y}{r}.png?access-token={accessToken}', {
+        // L.tileLayer('https://{s}.tile.jawg.io/jawg-matrix/{z}/{x}/{y}{r}.png?access-token={accessToken}', {
+        //     attribution: '<a href="http://jawg.io" title="Tiles Courtesy of Jawg Maps" target="_blank">&copy; <b>Jawg</b>Maps</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        //     minZoom: 0,
+        //     maxZoom: 22,
+        //     subdomains: 'abcd',
+        //     accessToken: 'hiemvifLIv1RNspPeW9qVBrmEVuXLYcXanYc9QDikBwVP3aJyuZ5KpexJyxZdjrz'
+        // }).addTo(map)
+        var baseLayer = L.tileLayer('https://{s}.tile.jawg.io/jawg-matrix/{z}/{x}/{y}{r}.png?access-token={accessToken}', {
             attribution: '<a href="http://jawg.io" title="Tiles Courtesy of Jawg Maps" target="_blank">&copy; <b>Jawg</b>Maps</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
             minZoom: 0,
             maxZoom: 22,
             subdomains: 'abcd',
             accessToken: 'hiemvifLIv1RNspPeW9qVBrmEVuXLYcXanYc9QDikBwVP3aJyuZ5KpexJyxZdjrz'
-        }).addTo(map)
+        })//.addTo(map)
 
+        // Heatmap
+        function rndHeatData() {
+            var center = [31.24169, 121.49491];
+            var data = [];
+            for (i = 0; i < 500; i++) {
+                rY = randomNumber(-0.2, 0.2);
+                rX = randomNumber(-0.2, 0.2);
+                coord = [center[0] + rY, center[1] + rX];
+                count = randomNumber(0, 5);
+                data.push({ lat: coord[0], lng: coord[1], count: count });
+            }
+            return data;
+        }
+        var testData = {
+            max: 5,
+            data: rndHeatData()
+        };
+        var cfg = {
+            // radius should be small ONLY if scaleRadius is true (or small radius is intended)
+            // if scaleRadius is false it will be the constant radius used in pixels
+            "radius": 0.02,
+            "maxOpacity": .25,
+            // scales the radius based on map zoom
+            "scaleRadius": true,
+            // if set to false the heatmap uses the global maximum for colorization
+            // if activated: uses the data maximum within the current map boundaries
+            //   (there will always be a red spot with useLocalExtremas true)
+            "useLocalExtrema": true,
+            // which field name in your data represents the latitude - default "lat"
+            latField: 'lat',
+            // which field name in your data represents the longitude - default "lng"
+            lngField: 'lng',
+            // which field name in your data represents the data value - default "value"
+            valueField: 'count'
+        };
+        var heatmapLayer = new HeatmapOverlay(cfg);
+        heatmapLayer.setData(testData);
+
+        var map = new L.Map('map', {
+            center: new L.LatLng(31.2416, 121.49491),
+            zoom: 13,
+            layers: [baseLayer, heatmapLayer]
+        });
 
 
 
@@ -72,7 +125,7 @@
         function rndVideoFeed() {
             // pick random processed feed and load
             maxFeed = 5;
-            feed = Math.floor(Math.random()*maxFeed)
+            feed = Math.floor(Math.random() * maxFeed)
             html = "<video src=\"videos-cv/" + feed + ".mp4\" loop nocontrols autoplay style=\"max-width: 265px; padding-left: 8px; padding-top: 5px;\"></video>"
             return html
         }
