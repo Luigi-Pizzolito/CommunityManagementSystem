@@ -23,4 +23,6 @@ go.work
 # -------------------------------------------------------------
 
 # Hide DB Config Keys
-configs/db.env
+configs/*.env
+
+installnvidiaruntime.txt

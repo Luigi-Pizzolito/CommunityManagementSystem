@@ -1,12 +1,223 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Coomunity Management System</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script src="https://unpkg.com/leaflet-providers@latest/leaflet-providers.js"></script>
+    <title>Document</title>
+    <style>
+        html,
+        body {
+            padding: 0;
+            margin: 0
+        }
+    </style>
 </head>
+
 <body>
-    <h1>Hello from NginX container!</h1>
+    <div id="map" style="height: 1000px; padding:0; margin:0;"></div>
+    <script>
+        var map = L.map('map').setView([31.2416, 121.49491], 13);
+        /*
+        L.tileLayer('https://tile.openstreetmap.fr/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            className: 'map-tiles',
+            attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        }).addTo(map);
+        */
+        L.tileLayer('https://{s}.tile.jawg.io/jawg-matrix/{z}/{x}/{y}{r}.png?access-token={accessToken}', {
+            attribution: '<a href="http://jawg.io" title="Tiles Courtesy of Jawg Maps" target="_blank">&copy; <b>Jawg</b>Maps</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            minZoom: 0,
+            maxZoom: 22,
+            subdomains: 'abcd',
+            accessToken: 'hiemvifLIv1RNspPeW9qVBrmEVuXLYcXanYc9QDikBwVP3aJyuZ5KpexJyxZdjrz'
+        }).addTo(map)
+
+
+
+
+
+
+
+        function addPoint(point) {
+            var CustomIcon = L.Icon.extend({
+                options: {
+                    iconSize: [40, 42],
+                    iconAnchor: [20, 0],
+                }
+            });
+            var Icon = new CustomIcon({ iconUrl: point.icon })
+            var marker = L.marker(point.coords, { icon: Icon }).addTo(map);
+
+            marker.bindPopup("<b>" + point.title + "</b>" + point.text);
+        }
+
+        function randomNumber(min, max) {
+            return Math.random() * (max - min) + min;
+        }
+        center = [31.24169, 121.49491];
+        var points = [];
+        // var icons = [
+        //     "img/parking3.png",
+        //     "img/patrol3.png",
+        //     "img/accident3.png",
+        //     "img/trash3.png"
+        // ];
+        function rndVideoFeed() {
+            // pick random processed feed and load
+            maxFeed = 61;
+            feed = Math.floor(Math.random()*maxFeed)
+            html = "<video src=\"videos-original/" + feed + ".mp4\" loop nocontrols autoplay style=\"max-width: 265px; padding-left: 8px; padding-top: 5px;\"></video>"
+            return html
+        }
+        // function rndPoints() {
+        //     for (i = 0; i < 50; i++) {
+        //         rY = randomNumber(-0.1, 0.1);
+        //         rX = randomNumber(-0.1, 0.1);
+        //         coord = [center[0] + rY, center[1] + rX];
+        //         icon = icons[Math.round(Math.random() * 3)];
+        //         title = ""
+        //         text = ""
+        //         switch (icons) {
+        //             case "img/parking.png":
+        //                 title = "Parking Live Feed"
+        //                 text = rndVideoFeed();
+        //                 break;
+
+        //             case "img/patrol.png":
+        //                 title = "Police Patrol Vehicle"
+        //                 loc =
+        //                     text = "<p><b>Current Location: </b>" + loc + "</p>"
+        //                 break;
+
+        //             case "img/accident.png":
+        //                 title = "Accident Reported"
+        //                 text = "<br />"
+        //                 break;
+
+        //             case "img/trash.png":
+        //                 title = "Trash Collection Station"
+        //                 stats = ["Empty", "20% Full", "40% Full", "60% Full", "80% Full", "100% Full"];
+        //                 status = stats[Math.round(randomNumber(0, len(stats) - 1))];
+        //                 text = "<p><b>Status:</b> " + status + "</p>";
+        //                 break;
+
+        //             default:
+        //                 break;
+        //         }
+        //         points.push({ "coords": coord, "icon": icon, "title": title, "text": text });
+        //     }
+        // }
+
+        function loadPointsAttention(json, num) {
+            jsonc = [];
+            for (let index = 0; index < num; index++) {
+                jsonc.push(json[(Math.floor(Math.random() * json.length))])
+            }
+            jsonc.forEach(e => {
+                coord = [e.coordinates.latitude, e.coordinates.longitude];
+                icon = "img/accident3.png"
+                title = "Accident Reported"
+                text = "<p><b>Time:</b> " + e.timestamp + "<br />"
+                text += "<b>Emergency Contact:</b> " + e.emergencyContact + "<br />"
+                text += "<b>Emergency Type:</b> " + e.emergencyType + "<br />"
+                text += "<b>Address:</b> " + e.address + "<br />"
+                text += "<b>Note:</b> " + e.note + "</p>"
+
+                points.push({ "coords": coord, "icon": icon, "title": title, "text": text });
+            });
+        }
+        function loadPointsGarbage(json, num) {
+            jsonc = [];
+            for (let index = 0; index < num; index++) {
+                jsonc.push(json[(Math.floor(Math.random() * json.length))])
+            }
+            jsonc.forEach(e => {
+                coord = [e.coordinates.latitude, e.coordinates.longitude];
+                icon = "img/trash3.png"
+                title = "Garbage Collection Station"
+                stats = ["Empty", "20% Full", "40% Full", "60% Full", "80% Full", "100% Full"];
+                status = stats[(Math.floor(Math.random() * stats.length))];
+                text = "<p><b>Time:</b> " + e.timestamp + "<br />"
+                text += "<b>Status:</b> " + status + "<br />";
+                text += "<b>Address:</b> " + e.address + "<br />"
+                text += "<b>Person in Charge:</b> " + e.personInCharge + "</p>";
+
+                points.push({ "coords": coord, "icon": icon, "title": title, "text": text });
+            });
+        }
+        function loadPointsParking(json, num) {
+            jsonc = [];
+            for (let index = 0; index < num; index++) {
+                jsonc.push(json[(Math.floor(Math.random() * json.length))])
+            }
+            jsonc.forEach(e => {
+                coord = [e.coordinates.latitude, e.coordinates.longitude];
+                icon = "img/parking3.png"
+                title = "Parking Live Feed"
+                text = "<p><b>Number of Cars:</b> " + e.numberOfCars + "<br />"
+                text += "<b>Address:</b> " + e.address + "<br />"
+                text += rndVideoFeed() + "</p>";
+
+                points.push({ "coords": coord, "icon": icon, "title": title, "text": text });
+            });
+        }
+        function loadPointsPatrol(json, num) {
+            jsonc = [];
+            for (let index = 0; index < num; index++) {
+                jsonc.push(json[(Math.floor(Math.random() * json.length))])
+            }
+            jsonc.forEach(e => {
+                coord = [e.coordinates.latitude, e.coordinates.longitude];
+                icon = "img/patrol3.png"
+                title = "Police Patrol"
+                text = "<p><b>Time:</b> " + e.timestamp + "<br />"
+                text += "<b>Current Location: </b>" + e.address + "<br>"
+                text += "<b>Officer Contact:</b> " + e.officerContact + "</p>"
+
+                points.push({ "coords": coord, "icon": icon, "title": title, "text": text });
+            });
+        }
+
+        // setInterval(() => {
+        points = [];
+        // rndPoints();
+
+        function syncGet(url) {
+            const request = new XMLHttpRequest();
+            request.open("GET", url, false); // `false` makes the request synchronous
+            request.send(null);
+
+            if (request.status === 200) {
+                return JSON.parse(request.responseText);
+            }
+
+        }
+
+        num = 8
+        json = syncGet("json/fake_attention_data.json")
+        loadPointsAttention(json, num)
+        json = syncGet("json/fake_garbage_station_data.json")
+        loadPointsGarbage(json, num)
+        json = syncGet("json/fake_parked_cars_data.json")
+        loadPointsParking(json, num)
+        json = syncGet("json/fake_patrol_data.json")
+        loadPointsPatrol(json, num)
+
+
+        points.forEach((point) => {
+            addPoint(point);
+        });
+        // }, 1000);
+
+    </script>
+
 </body>
+
 </html>
